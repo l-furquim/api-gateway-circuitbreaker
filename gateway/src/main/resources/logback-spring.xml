@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+    <springProperty scope="context" name="lokiUrl" source="loki.url" defaultValue="http://localhost:3100"/>
+
+    <!-- Loki Appender -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${lokiUrl}</url>
+            <connectionTimeoutMs>5000</connectionTimeoutMs>
+            <requestTimeoutMs>10000</requestTimeoutMs>
+        </http>
+
+        <format>
+            <label>
+                <pattern>
+                    app=${appName},
+                    host=${HOSTNAME},
+                    level=%level,
+                    logger=%logger{36}
+                </pattern>
+                <readMarkers>true</readMarkers>
+            </label>
+
+            <message class="com.github.loki4j.logback.JsonLayout">
+                <includeContextName>false</includeContextName>
+                <includeLevelName>true</includeLevelName>
+                <includeLoggerName>true</includeLoggerName>
+                <includeThreadName>true</includeThreadName>
+                <includeMarkers>true</includeMarkers>
+                <includeMdc>true</includeMdc>
+                <includeException>true</includeException>
+            </message>
+
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+
+    <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
+    <logger name="org.springframework.web.servlet.function" level="DEBUG"/>
+
+    <logger name="io.github.bucket4j" level="INFO"/>
+
+    <logger name="io.github.resilience4j" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC_LOKI"/>
+    </root>
+</configuration>

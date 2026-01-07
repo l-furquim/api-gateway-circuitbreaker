@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: api-gateway-circuitbreaker
+  redis:
+    host: localhost
+    port: 6379
+    password: admin
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+  observations:
+    key-values:
+      application: api-gateway
+  tracing:
+    sampling:
+      probability: 1.0
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: "5s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        minimum-number-of-calls: 5
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: "3s"
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: "2s"
+loki:
+  url=http://localhost:3100/loki/api/v1/push:
+routes:
+  payment-service: ${payment_service_url:http://user-service:8083}
+  product-catalog-service: ${product_catalog_service_url:http://user-service:8082}
+  user-service: ${user_service_url:http://user-service:8081}
