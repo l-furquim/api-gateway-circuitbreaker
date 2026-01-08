@@ -3,9 +3,9 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <springProperty scope="context" name="appName" source="spring.application.name"/>
-    <springProperty scope="context" name="lokiUrl" source="loki.url" defaultValue="http://localhost:3100"/>
+    <springProperty scope="context" name="lokiUrl" source="loki.url"
+                    defaultValue="http://loki:3100/loki/api/v1/push"/>
 
-    <!-- Loki Appender -->
     <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
         <http>
             <url>${lokiUrl}</url>
@@ -17,21 +17,20 @@
             <label>
                 <pattern>
                     app=${appName},
-                    host=${HOSTNAME},
                     level=%level,
                     logger=%logger{36}
                 </pattern>
                 <readMarkers>true</readMarkers>
             </label>
 
-            <message class="com.github.loki4j.logback.JsonLayout">
-                <includeContextName>false</includeContextName>
-                <includeLevelName>true</includeLevelName>
-                <includeLoggerName>true</includeLoggerName>
-                <includeThreadName>true</includeThreadName>
-                <includeMarkers>true</includeMarkers>
-                <includeMdc>true</includeMdc>
-                <includeException>true</includeException>
+            <message>
+                <pattern>
+                    %d{yyyy-MM-dd HH:mm:ss.SSS}
+                    [%thread]
+                    %-5level
+                    %logger{36}
+                    - %msg%n%ex
+                </pattern>
             </message>
 
             <sortByTime>true</sortByTime>
@@ -40,12 +39,10 @@
 
     <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
     <logger name="org.springframework.web.servlet.function" level="DEBUG"/>
-
     <logger name="io.github.bucket4j" level="INFO"/>
-
     <logger name="io.github.resilience4j" level="INFO"/>
 
     <root level="INFO">
-        <appender-ref ref="ASYNC_LOKI"/>
+        <appender-ref ref="LOKI"/>
     </root>
 </configuration>

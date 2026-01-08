@@ -52,7 +52,7 @@ resilience4j:
         max-attempts: 3
         wait-duration: "2s"
 loki:
-  url=http://localhost:3100/loki/api/v1/push:
+  url: ${loki_url:http://loki:3100/loki/api/v1/push}
 routes:
   payment-service: ${payment_service_url:http://user-service:8083}
   product-catalog-service: ${product_catalog_service_url:http://user-service:8082}
