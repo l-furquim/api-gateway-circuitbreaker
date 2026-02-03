@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.RedisSerializer
@@ -21,7 +22,7 @@ class RedisConfig(
     private val redisHost: String,
 
     @Value("\${spring.data.redis.port:6379}")
-    private val redisPort: String,
+    private val redisPort: Int,
 
     @Value("\${spring.data.redis.password:}")
     private val redisPassword: String
@@ -29,7 +30,13 @@ class RedisConfig(
 
     @Bean
     fun connectionFactory(): LettuceConnectionFactory {
-        return LettuceConnectionFactory()
+        val standalone = RedisStandaloneConfiguration()
+        standalone.hostName = redisHost
+        standalone.port = redisPort
+        if (redisPassword.isNotBlank()) {
+            standalone.setPassword(redisPassword)
+        }
+        return LettuceConnectionFactory(standalone)
     }
 
     @Bean
@@ -76,12 +83,13 @@ class RedisConfig(
 
         val address = "redis://$redisHost:$redisPort"
 
-        config.useSingleServer() // TODO: move to a cluster of multi cluster server
+        config.useSingleServer()
             .setAddress(address)
-            .setPassword(redisPassword)
+            .setPassword(redisPassword.ifBlank { null })
             .setConnectionPoolSize(10)
             .setConnectionMinimumIdleSize(5)
-            .setConnectTimeout(5000).timeout = 3000
+            .setConnectTimeout(5000)
+            .timeout = 3000
 
         return Redisson.create(config)
     }

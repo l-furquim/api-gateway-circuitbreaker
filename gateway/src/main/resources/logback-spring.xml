@@ -36,6 +36,9 @@
             <sortByTime>true</sortByTime>
         </format>
     </appender>
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+    </appender>
+
 
     <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
     <logger name="org.springframework.web.servlet.function" level="DEBUG"/>
@@ -44,5 +47,6 @@
 
     <root level="INFO">
         <appender-ref ref="LOKI"/>
+        <appender-ref ref="OTEL"/>
     </root>
 </configuration>

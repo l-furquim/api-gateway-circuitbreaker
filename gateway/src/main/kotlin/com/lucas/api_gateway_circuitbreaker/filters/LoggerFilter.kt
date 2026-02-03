@@ -1,5 +1,6 @@
 package com.lucas.api_gateway_circuitbreaker.filters
 
+import io.micrometer.tracing.Tracer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -8,20 +9,18 @@ import org.springframework.web.servlet.function.HandlerFilterFunction
 import org.springframework.web.servlet.function.HandlerFunction
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
-import java.util.*
 
 @Component
 class LoggerFilter(
-    private final val logger: Logger = LoggerFactory.getLogger(LoggerFilter::class.java)
+    private final val logger: Logger = LoggerFactory.getLogger(LoggerFilter::class.java),
+    private final val tracer: Tracer
 ): HandlerFilterFunction<ServerResponse, ServerResponse> {
     override fun filter(
         request: ServerRequest,
         next: HandlerFunction<ServerResponse>
     ): ServerResponse {
-        val requestId = UUID.randomUUID().toString()
         val startTime = System.currentTimeMillis()
 
-        MDC.put("request_id", requestId)
         MDC.put("method", request.method().name())
         MDC.put("path", request.path())
         MDC.put(
